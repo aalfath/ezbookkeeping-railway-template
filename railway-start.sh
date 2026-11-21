@@ -38,27 +38,29 @@ if [ -z "${EBK_SECURITY_SECRET_KEY:-}" ]; then
   export EBK_SECURITY_SECRET_KEY
 fi
 
+# Run as the image's non-root user (uid 1000). Railway volumes mount as root,
+# so when started as root, fix ownership first and drop privileges with busybox su.
 if [ "$(id -u)" = "0" ]; then
   chown -R "$APP_UID:$APP_GID" "$DATA_DIR"
-  RUN="su-exec $APP_UID:$APP_GID"
+  run() { su -p -s /bin/sh ezbookkeeping -c 'exec "$0" "$@"' "$@"; }
 else
-  RUN=""
+  run() { "$@"; }
 fi
 
 cd /ezbookkeeping
 
 # Create or update the database tables before the first account is added
-$RUN "$BIN" database update >/dev/null
+run "$BIN" database update >/dev/null
 
 # First account, created once from ADMIN_* variables
 if [ -n "${ADMIN_USERNAME:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ] && [ ! -f "$DATA_DIR/.admin_created" ]; then
-  if $RUN "$BIN" userdata user-get --username "$ADMIN_USERNAME" >/dev/null 2>&1; then
+  if run "$BIN" userdata user-get --username "$ADMIN_USERNAME" >/dev/null 2>&1; then
     echo "railway-start: account '$ADMIN_USERNAME' already exists, not creating it"
   elif [ -z "${ADMIN_EMAIL:-}" ]; then
     echo "railway-start: ADMIN_EMAIL is empty, skipping first account creation" >&2
   else
     # user-add prints the password hash, so its output is discarded
-    if $RUN "$BIN" userdata user-add \
+    if run "$BIN" userdata user-add \
         --username "$ADMIN_USERNAME" \
         --email "$ADMIN_EMAIL" \
         --nickname "${ADMIN_NICKNAME:-$ADMIN_USERNAME}" \
@@ -71,7 +73,10 @@ if [ -n "${ADMIN_USERNAME:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ] && [ ! -f "$DATA
     fi
   fi
   touch "$DATA_DIR/.admin_created"
-  [ -z "$RUN" ] || chown "$APP_UID:$APP_GID" "$DATA_DIR/.admin_created"
+  [ "$(id -u)" != "0" ] || chown "$APP_UID:$APP_GID" "$DATA_DIR/.admin_created"
 fi
 
-exec $RUN "$BIN" server run
+if [ "$(id -u)" = "0" ]; then
+  exec su -p -s /bin/sh ezbookkeeping -c 'exec "$0" "$@"' "$BIN" server run
+fi
+exec "$BIN" server run
