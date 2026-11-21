@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1-1 (2026-11-21)
+
+- README: Deploy on Railway button for the published template `ezbookkeeping-1`. No change to the app or its settings.
+
 ## 2.1.1 (2026-11-21)
 
 - First release of the Railway template: ezBookkeeping 2.1.1 (`mayswind/ezbookkeeping:2.1.1@sha256:584e4d7f…`),

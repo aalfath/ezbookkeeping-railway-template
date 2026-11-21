@@ -1,3 +1,5 @@
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/ezbookkeeping-1?utm_medium=integration&utm_source=button&utm_campaign=ezbookkeeping)
+
 # ezBookkeeping on Railway
 
 One-click Railway template for [ezBookkeeping](https://github.com/mayswind/ezbookkeeping), an open-source, self-hosted personal finance app (MIT).
