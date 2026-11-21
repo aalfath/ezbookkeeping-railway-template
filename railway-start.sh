@@ -42,7 +42,7 @@ fi
 # so when started as root, fix ownership first and drop privileges with busybox su.
 if [ "$(id -u)" = "0" ]; then
   chown -R "$APP_UID:$APP_GID" "$DATA_DIR"
-  run() { su -p -s /bin/sh ezbookkeeping -c 'exec "$0" "$@"' "$@"; }
+  run() { su -p -s /bin/sh -c 'exec "$0" "$@"' -- ezbookkeeping "$@"; }
 else
   run() { "$@"; }
 fi
@@ -77,6 +77,6 @@ if [ -n "${ADMIN_USERNAME:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ] && [ ! -f "$DATA
 fi
 
 if [ "$(id -u)" = "0" ]; then
-  exec su -p -s /bin/sh ezbookkeeping -c 'exec "$0" "$@"' "$BIN" server run
+  exec su -p -s /bin/sh -c 'exec "$0" "$@"' -- ezbookkeeping "$BIN" server run
 fi
 exec "$BIN" server run
