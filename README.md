@@ -8,7 +8,7 @@ One-click Railway template for [ezBookkeeping](https://github.com/mayswind/ezboo
   `mayswind/ezbookkeeping:2.1.1@sha256:584e4d7f6fc1642773e840b56296f8782912e3bb17abfe3c49097508b198cdb7`.
 - One service with a public HTTPS domain and one volume at `/ezbookkeeping/data`, which holds the SQLite
   database (`ezbookkeeping.db`) and uploaded files (`storage/`: avatars, custom icons, transaction pictures).
-- Health check: `GET /healthz.json`.
+- Health check: `GET /` (Railway doesn't accept a dot in the path, so the app's own `/healthz.json` can't be used there; `/` is served by the same Go server, without login).
 
 `railway-start.sh` (the container entrypoint) sets the listen port from `PORT`, derives the public URL from
 `RAILWAY_PUBLIC_DOMAIN`, keeps the database and uploads on the volume, turns public sign-up off by default,
